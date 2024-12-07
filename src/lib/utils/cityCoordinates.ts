@@ -2,7 +2,6 @@ export const cityCoordinates: Record<string, { lat: number; lng: number }> = {
 	medellín: { lat: 6.2442, lng: -75.5812 },
 	yopal: { lat: 5.3489, lng: -72.4009 },
 	bogota: { lat: 4.711, lng: -74.0721 },
-	//"no especificado": { lat: 4.5709, lng: -74.2973 },
 	casanare: { lat: 5.7589, lng: -71.5724 },
 	medina: { lat: 4.5133, lng: -73.3497 },
 	nechi: { lat: 8.0943, lng: -74.7759 },

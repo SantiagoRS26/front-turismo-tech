@@ -26,7 +26,6 @@ export default function MapView({ geoJSONData }: MapViewProps) {
     mapRef.current.on("load", () => {
       if (!mapRef.current) return;
 
-      // Fuente vacía de inicio
       mapRef.current.addSource("cities", {
         type: "geojson",
         data: {
@@ -114,14 +113,12 @@ export default function MapView({ geoJSONData }: MapViewProps) {
     });
   }, []);
 
-  // Efecto para actualizar los datos
   useEffect(() => {
     if (mapRef.current && geoJSONData && geoJSONData.features && geoJSONData.features.length > 0) {
       const source = mapRef.current.getSource("cities") as mapboxgl.GeoJSONSource;
       if (source) {
         source.setData(geoJSONData);
 
-        // Ajustar el mapa a la extensión de los puntos
         const coordinates = geoJSONData.features.map((f: any) => f.geometry.coordinates);
         const bounds = coordinates.reduce((bounds: mapboxgl.LngLatBounds, coord: [number, number]) => {
           return bounds.extend(coord);

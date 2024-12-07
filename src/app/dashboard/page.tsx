@@ -43,7 +43,6 @@ ChartJS.register(
 export default function Dashboard() {
   const { response_counts, datetime_counts, globalStats, geoJSONData } = useDashboardData();
 
-  // Verifica que todos los datos estén disponibles
   if (
     !response_counts ||
     !datetime_counts ||
