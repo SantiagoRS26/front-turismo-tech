@@ -12,14 +12,27 @@ interface MapProps {
 export default function MapContainer({ places }: MapProps) {
 	const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
 
+	const parseCoordinate = (coord: string, defaultValue: number) => {
+		const parsed = parseFloat(coord);
+		return isNaN(parsed) ? defaultValue : parsed;
+	};
+
 	const initialViewState = {
-		longitude: places.length > 0 ? places[0].location.longitude : -74.5,
-		latitude: places.length > 0 ? places[0].location.latitude : 40,
+		longitude:
+			places.length > 0
+				? parseCoordinate(places[0].location.longitude, -74.5)
+				: -74.5,
+		latitude:
+			places.length > 0 ? parseCoordinate(places[0].location.latitude, 40) : 40,
 		zoom: 12,
 	};
 
 	const getMarkerIcon = (category: string) => {
 		return `/marketIcons/${category.toLowerCase()}.png`;
+	};
+
+	const getServicesList = (services: string) => {
+		return services.split(",").map((s) => s.trim());
 	};
 
 	return (
@@ -31,89 +44,95 @@ export default function MapContainer({ places }: MapProps) {
 				mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}>
 				<NavigationControl position="top-left" />
 
-				{places.map((place, index) => (
-					<Marker
-						key={index}
-						longitude={place.location.longitude}
-						latitude={place.location.latitude}
-						anchor="bottom"
-						onClick={(e) => {
-							e.originalEvent.stopPropagation();
-							setSelectedPlace(place);
-						}}>
-						<img
-							src={getMarkerIcon(place.category)}
-							alt={`Marcador de ${place.category}`}
-							className="cursor-pointer"
-							style={{ width: "30px", height: "30px" }}
-						/>
-					</Marker>
-				))}
+				{places.map((place, index) => {
+					const longitude = parseCoordinate(place.location.longitude, -74.5);
+					const latitude = parseCoordinate(place.location.latitude, 40);
+					return (
+						<Marker
+							key={index}
+							longitude={longitude}
+							latitude={latitude}
+							anchor="bottom"
+							onClick={(e) => {
+								e.originalEvent.stopPropagation();
+								setSelectedPlace(place);
+							}}>
+							<img
+								src={getMarkerIcon(place.category)}
+								alt={`Marcador de ${place.category}`}
+								className="cursor-pointer"
+								style={{ width: "30px", height: "30px" }}
+							/>
+						</Marker>
+					);
+				})}
 
-{selectedPlace && (
-  <Popup
-    longitude={selectedPlace.location.longitude}
-    latitude={selectedPlace.location.latitude}
-    onClose={() => setSelectedPlace(null)}
-    closeOnClick={false}
-    maxWidth="400px">
-    <div className="popup-content bg-white p-4 rounded-lg shadow-md">
-      <h3 className="text-xl font-bold text-gray-800">{selectedPlace.name}</h3>
-      <p className="text-sm text-gray-600 mt-2">
-        <strong className="font-semibold">Categoría:</strong> {selectedPlace.category}
-      </p>
-      <p className="text-sm text-gray-600">
-        <strong className="font-semibold">Dirección:</strong> {selectedPlace.address}
-      </p>
-      <p className="text-sm text-gray-600">
-        <strong className="font-semibold">Calificación:</strong> {selectedPlace.rating} (
-        {selectedPlace.reviews} reseñas)
-      </p>
+				{selectedPlace && (
+					<Popup
+						longitude={parseCoordinate(selectedPlace.location.longitude, -74.5)}
+						latitude={parseCoordinate(selectedPlace.location.latitude, 40)}
+						onClose={() => setSelectedPlace(null)}
+						closeOnClick={false}
+						maxWidth="400px">
+						<div className="popup-content bg-white p-4 rounded-lg shadow-md">
+							<h3 className="text-xl font-bold text-gray-800">
+								{selectedPlace.name}
+							</h3>
+							<p className="text-sm text-gray-600 mt-2">
+								<strong className="font-semibold">Categoría:</strong>{" "}
+								{selectedPlace.category}
+							</p>
+							<p className="text-sm text-gray-600">
+								<strong className="font-semibold">Dirección:</strong>{" "}
+								{selectedPlace.address}
+							</p>
+							<p className="text-sm text-gray-600">
+								<strong className="font-semibold">Calificación:</strong>{" "}
+								{selectedPlace.rating} ({selectedPlace.reviews} reseñas)
+							</p>
 
-      <p className="text-sm font-semibold mt-2">Servicios:</p>
-      <ul className="list-disc list-inside text-sm text-gray-600">
-        {selectedPlace.services.map((service, idx) => (
-          <li key={idx}>{service}</li>
-        ))}
-      </ul>
+							{selectedPlace.services &&
+								selectedPlace.services.trim() !== "" && (
+									<>
+										<p className="text-sm font-semibold mt-2">Servicios:</p>
+										<ul className="list-disc list-inside text-sm text-gray-600">
+											{getServicesList(selectedPlace.services).map(
+												(service, idx) => (
+													<li key={idx}>{service}</li>
+												)
+											)}
+										</ul>
+									</>
+								)}
 
-      {selectedPlace.hours && selectedPlace.hours.length > 0 && (
-        <>
-          <p className="text-sm font-semibold mt-2">Horarios:</p>
-          <ul className="list-disc list-inside text-sm text-gray-600">
-            {selectedPlace.hours.map((hour, idx) => (
-              <li key={idx}>
-                {hour.open} - {hour.close}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+							{selectedPlace.hours && selectedPlace.hours.trim() !== "" && (
+								<>
+									<p className="text-sm font-semibold mt-2">Horarios:</p>
+									<p className="text-sm text-gray-600">{selectedPlace.hours}</p>
+								</>
+							)}
+							<a
+								href={selectedPlace.google_maps_url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-blue-500 underline block mt-2 hover:text-blue-700">
+								Ver en Google Maps
+							</a>
 
-      <a
-        href={selectedPlace.google_maps_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-500 underline block mt-2 hover:text-blue-700">
-        Ver en Google Maps
-      </a>
-
-      <div className="mt-2 flex flex-wrap">
-        {selectedPlace.images.map((image, idx) => (
-          <img
-            key={idx}
-            src={image}
-            alt={`${selectedPlace.name} imagen ${idx + 1}`}
-            width={100}
-            height={75}
-            className="object-cover rounded-lg hover:scale-105 transition-transform duration-200 mr-2 mb-2"
-          />
-        ))}
-      </div>
-    </div>
-  </Popup>
-)}
-
+							{selectedPlace.images && selectedPlace.images.trim() !== "" && (
+								<div className="mt-2 flex flex-wrap">
+									<img
+										src={selectedPlace.images}
+										alt={`${selectedPlace.name} imagen`}
+										width={100}
+										height={75}
+										className="object-cover rounded-lg hover:scale-105 transition-transform duration-200 mr-2 mb-2"
+									/>
+								</div>
+							)}
+						</div>
+					</Popup>
+				)}
 			</Map>
 		</div>
 	);

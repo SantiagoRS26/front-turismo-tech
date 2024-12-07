@@ -1,23 +1,18 @@
 export interface Location {
-	latitude: number;
-	longitude: number;
-}
-
-export interface Hours {
-	open: string;
-	close: string;
+	latitude: string;
+	longitude: string;
 }
 
 export interface Place {
 	name: string;
-	rating: number;
-	reviews: number;
+	rating: string;
+	reviews: string;
 	category: string;
 	address: string;
-	hours: Hours[];
-	services: string[];
+	hours: string;
+	services: string;
 	location: Location;
-	images: string[];
+	images: string;
 	google_maps_url: string;
 }
 

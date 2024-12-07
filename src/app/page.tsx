@@ -5,11 +5,11 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import * as mutations from "@/services/graphql/mutations";
+import * as queries from "@/services/graphql/queries";
 import { v4 as uuidv4 } from "uuid";
 import { client } from "@/lib/client";
 import { detectCategoriesFromUserInterest } from "@/lib/utils/categoryDetector";
-import recommendationsData from "@/recommendations.json";
-import { Recommendations } from "@/modules/chat/types/Recommendations";
+import { Place, Recommendations } from "@/modules/chat/types/Recommendations";
 
 interface MessageType {
 	role: "user" | "bot";
@@ -20,7 +20,9 @@ export default function Home() {
 	const [messages, setMessages] = useState<MessageType[]>([]);
 	const [isBotTyping, setIsBotTyping] = useState(false);
 	const [sessionId, setSessionId] = useState<string>(uuidv4());
-	const [userInterestCategories, setUserInterestCategories] = useState<string[]>([]);
+	const [userInterestCategories, setUserInterestCategories] = useState<
+		string[]
+	>([]);
 	const [recommendations, setRecommendations] =
 		useState<Recommendations | null>(null);
 
@@ -54,12 +56,45 @@ export default function Home() {
 		};
 	}, []);
 
-	const fetchRecommendations = async (): Promise<Recommendations> => {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-				resolve(recommendationsData);
-			}, 1000);
-		});
+	const fetchRecommendations = async (
+		categories: string[]
+	): Promise<Recommendations> => {
+		try {
+			const allPlaces: Place[] = [];
+
+			for (const category of categories) {
+				const result = await client.graphql({
+					query: queries.getLocations,
+					variables: { categoryLocation: category },
+				});
+
+				if ("data" in result && result.data && result.data.getLocations) {
+					const places: Place[] = result.data.getLocations.map((loc: any) => ({
+						name: loc.name,
+						rating: String(loc.rating),
+						reviews: String(loc.reviews),
+						category: loc.category,
+						address: loc.address,
+						hours: loc.hours,
+						services: loc.services,
+						location: {
+							latitude: String(loc.latitude),
+							longitude: String(loc.longitude),
+						},
+						images: loc.images,
+						google_maps_url: loc.google_maps_url,
+					}));
+					allPlaces.push(...places);
+				} else {
+					console.error("Respuesta inesperada al obtener ubicaciones:", result);
+				}
+			}
+
+			return { places: allPlaces };
+		} catch (error) {
+			console.error("Error al obtener recomendaciones:", error);
+			throw error;
+		}
 	};
 
 	const sendMessage = async (humanMessage: string) => {
@@ -87,24 +122,36 @@ export default function Home() {
 			});
 
 			if ("data" in result && result.data && result.data.sendMessage) {
-				const botResponse: string = result.data.sendMessage;
+				let botResponse: string = result.data.sendMessage;
 
-                setMessages((prev) => [...prev, { role: "bot", content: botResponse }]);
+				const containsMapPhrase = botResponse
+					.toLowerCase()
+					.includes("mapa con las recomendaciones");
 
-				if (botResponse.toLowerCase().includes("mapa con las recomendaciones")) {
-                    const fetchedRecommendations = await fetchRecommendations();
-                    console.log("Recomendaciones:", fetchedRecommendations);
-                    setRecommendations(fetchedRecommendations);
-                  
-                    setMessages((prev) => [
-                      ...prev,
-                      {
-                        role: "bot",
-                        content: "Aquí tienes el mapa con las recomendaciones:",
-                        recommendations: fetchedRecommendations,
-                      },
-                    ]);
-                  }
+				if (containsMapPhrase) {
+					botResponse = botResponse
+						.replace(/mapa con las recomendaciones/gi, "")
+						.trim();
+				}
+
+				setMessages((prev) => [...prev, { role: "bot", content: botResponse }]);
+
+				if (containsMapPhrase) {
+					const fetchedRecommendations = await fetchRecommendations(
+						userInterestCategories
+					);
+					console.log("Recomendaciones:", fetchedRecommendations);
+					setRecommendations(fetchedRecommendations);
+
+					setMessages((prev) => [
+						...prev,
+						{
+							role: "bot",
+							content: "Aquí tienes el mapa con las recomendaciones:",
+							recommendations: fetchedRecommendations,
+						},
+					]);
+				}
 			} else {
 				console.error("Respuesta inesperada de la mutación:", result);
 				setMessages((prev) => [

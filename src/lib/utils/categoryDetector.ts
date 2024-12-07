@@ -4,6 +4,7 @@ export function detectCategoriesFromUserInterest(message: string): string[] {
 
     const restauranteKeywords = [
         "gastronomía",
+		"gastronomia",
         "comida",
         "restaurante",
         "menú",
