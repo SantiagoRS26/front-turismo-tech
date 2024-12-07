@@ -3,21 +3,27 @@
 import ChatBot from "@/modules/chat/components/ChatBot";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { generateClient } from "aws-amplify/api";
 import { useState, useEffect, useRef } from "react";
 import * as mutations from "@/services/graphql/mutations";
 import { v4 as uuidv4 } from "uuid";
 import { client } from "@/lib/client";
+import { detectCategoriesFromUserInterest } from "@/lib/utils/categoryDetector";
+import recommendationsData from "@/recommendations.json";
+import { Recommendations } from "@/modules/chat/types/Recommendations";
 
-type MessageType = {
+interface MessageType {
 	role: "user" | "bot";
 	content: string;
-};
+}
 
 export default function Home() {
 	const [messages, setMessages] = useState<MessageType[]>([]);
 	const [isBotTyping, setIsBotTyping] = useState(false);
 	const [sessionId, setSessionId] = useState<string>(uuidv4());
+	const [userInterestCategories, setUserInterestCategories] = useState<string[]>([]);
+	const [recommendations, setRecommendations] =
+		useState<Recommendations | null>(null);
+
 	const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
 
 	const resetSessionId = () => {
@@ -28,10 +34,9 @@ export default function Home() {
 		if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
 		inactivityTimer.current = setTimeout(() => {
 			resetSessionId();
-		}, 60000); // 1 minuto de inactividad
+		}, 60000);
 	};
 
-	// Escuchar eventos de usuario para reiniciar el temporizador de inactividad
 	useEffect(() => {
 		const handleUserActivity = () => {
 			resetInactivityTimer();
@@ -40,10 +45,8 @@ export default function Home() {
 		window.addEventListener("mousemove", handleUserActivity);
 		window.addEventListener("keydown", handleUserActivity);
 
-		// Configurar el temporizador inicial
 		resetInactivityTimer();
 
-		// Limpiar eventos y temporizador al desmontar el componente
 		return () => {
 			window.removeEventListener("mousemove", handleUserActivity);
 			window.removeEventListener("keydown", handleUserActivity);
@@ -51,8 +54,29 @@ export default function Home() {
 		};
 	}, []);
 
+	const fetchRecommendations = async (): Promise<Recommendations> => {
+		return new Promise((resolve) => {
+			setTimeout(() => {
+				resolve(recommendationsData);
+			}, 1000);
+		});
+	};
+
 	const sendMessage = async (humanMessage: string) => {
-		// Agregamos el mensaje del usuario al array
+		const categories = detectCategoriesFromUserInterest(humanMessage);
+		if (categories.length > 0) {
+			setUserInterestCategories((prev) => {
+				const newCategories = [...prev];
+				categories.forEach((category) => {
+					if (!newCategories.includes(category)) {
+						newCategories.push(category);
+					}
+				});
+				return newCategories;
+			});
+			console.log(`Categorías detectadas: ${categories.join(", ")}`);
+		}
+
 		setMessages((prev) => [...prev, { role: "user", content: humanMessage }]);
 
 		setIsBotTyping(true);
@@ -65,8 +89,22 @@ export default function Home() {
 			if ("data" in result && result.data && result.data.sendMessage) {
 				const botResponse: string = result.data.sendMessage;
 
-				// Agregamos el mensaje del bot al array directamente
-				setMessages((prev) => [...prev, { role: "bot", content: botResponse }]);
+                setMessages((prev) => [...prev, { role: "bot", content: botResponse }]);
+
+				if (botResponse.toLowerCase().includes("mapa con las recomendaciones")) {
+                    const fetchedRecommendations = await fetchRecommendations();
+                    console.log("Recomendaciones:", fetchedRecommendations);
+                    setRecommendations(fetchedRecommendations);
+                  
+                    setMessages((prev) => [
+                      ...prev,
+                      {
+                        role: "bot",
+                        content: "Aquí tienes el mapa con las recomendaciones:",
+                        recommendations: fetchedRecommendations,
+                      },
+                    ]);
+                  }
 			} else {
 				console.error("Respuesta inesperada de la mutación:", result);
 				setMessages((prev) => [
@@ -123,7 +161,6 @@ export default function Home() {
 				initial={{ opacity: 0, x: 100 }}
 				animate={{ opacity: 1, x: 0 }}
 				transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}>
-				{/* Pasamos las props al ChatBot */}
 				<ChatBot
 					messages={messages}
 					isBotTyping={isBotTyping}

@@ -25,13 +25,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ messages, isBotTyping, onSendMessage 
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isBotTyping]);
 
-  // Efecto para Text-to-Speech cada vez que llegue un nuevo mensaje del bot
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "bot") {
       const utterance = new SpeechSynthesisUtterance(lastMessage.content);
-      // Opcional: elegir voz, idioma u otras propiedades del utterance
-      // utterance.lang = "es-ES"; // Por ejemplo, para español
+      utterance.rate = 1.9;
       speechSynthesis.speak(utterance);
     }
   }, [messages]);

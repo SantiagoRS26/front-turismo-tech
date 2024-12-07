@@ -1,0 +1,110 @@
+{
+    "getResponseCounts": {
+      "response_counts": {
+        "¿De donde nos visitas?": {
+          "medellín": 7,
+          "yopal": 6,
+          "bogota": 3,
+          "no especificado": 2,
+          "casanare": 2,
+          "medina": 1,
+          "nechi": 1,
+          "pasto": 1,
+          "guainia": 1,
+          "barranquilla": 1,
+          "venecia": 1,
+          "amazonas": 1,
+          "cartagena": 1,
+          "arboletes": 1
+        },
+        "¿Vienes con tu familia, amigos o solo?": {
+          "solo": 18,
+          "pareja": 4,
+          "familia": 4,
+          "amigos": 1,
+          "en familia": 1,
+          "viajo con mi esposa y mis tres hijos": 1
+        },
+        "¿Con cuantas personas viajas?": {
+          "1": 17,
+          "2": 4,
+          "2 personas": 3,
+          "4": 2,
+          "5": 1,
+          "3 personas": 1,
+          "6 días": 1
+        },
+        "¿Qué intereses turísticos tienes (entretenimiento, comida, actividades)?": {
+          "gastronomía local y lugares turísticos": 12,
+          "comida": 6,
+          "gastronomía": 4,
+          "turismo de naturaleza": 2,
+          "cultura": 1,
+          "no especificado": 1,
+          "entretenimiento": 1,
+          "aventura": 1,
+          "visitar lugares turísticos en puerto lópez": 1
+        },
+        "¿Cuánto tiempo nos visitarás?": {
+          "2 días": 11,
+          "1 dia": 4,
+          "1 semana": 3,
+          "4 dias": 3,
+          "1 día": 2,
+          "no especificado": 1,
+          "4 días": 1,
+          "3 días": 1,
+          "no proporcionó presupuesto": 1,
+          "una semana": 1,
+          "2": 1
+        },
+        "¿Tienes un presupuesto definido?": {
+          "no tengo": 6,
+          "no definido": 6,
+          "no tengo un presupuesto definido": 6,
+          "no": 2,
+          "un millón": 2,
+          "sin presupuesto definido": 2,
+          "sin presupuesto": 2,
+          "no especificado": 1,
+          "100": 1
+        },
+        "datetime": {
+          "2024-12-07T01:58:10.164225": 1,
+          "2024-12-07T02:21:55.527763": 1,
+          "2024-12-07T03:09:15.068999": 1,
+          "2024-12-06T04:29:43.531026": 1,
+          "2024-12-07T02:32:07.363567": 1,
+          "2024-12-07T00:13:10.473786": 1,
+          "2024-12-06T15:54:09.833698": 1,
+          "2024-12-07T03:31:14.394758": 1,
+          "2024-12-05T15:34:51Z": 1,
+          "2024-12-06T23:11:41.110339": 1,
+          "2024-12-06T23:11:09.192197": 1,
+          "2024-12-07T03:16:28.502786": 1,
+          "2024-12-07T01:14:59.363473": 1,
+          "2024-12-07T02:35:41.452520": 1,
+          "2024-12-07T03:02:37.100648": 1,
+          "2024-12-07T02:28:32.744565": 1,
+          "2024-12-07T01:50:15.914776": 1,
+          "2024-12-07T01:42:47.353959": 1,
+          "2024-12-06T23:59:19.602510": 1,
+          "2024-12-06T23:58:35.938605": 1,
+          "2024-12-06T23:55:54.032543": 1,
+          "2024-12-06T16:19:17.701662": 1,
+          "2024-12-06T22:31:11.944093": 1,
+          "2024-12-06T22:30:29.261799": 1,
+          "2024-12-06T22:30:02.191123": 1,
+          "2024-12-06T22:28:34.609824": 1,
+          "2024-12-06T22:27:40.009195": 1,
+          "2024-12-06T22:26:44.447011": 1,
+          "2024-12-07T03:01:49.588520": 1
+        }
+      },
+      "datetime_counts": {
+        "2024-12-07": 14,
+        "2024-12-06": 14
+      }
+    }
+  }
+  

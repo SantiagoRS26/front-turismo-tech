@@ -1,0 +1,16 @@
+export const cityCoordinates: Record<string, { lat: number; lng: number }> = {
+	medellín: { lat: 6.2442, lng: -75.5812 },
+	yopal: { lat: 5.3489, lng: -72.4009 },
+	bogota: { lat: 4.711, lng: -74.0721 },
+	//"no especificado": { lat: 4.5709, lng: -74.2973 },
+	casanare: { lat: 5.7589, lng: -71.5724 },
+	medina: { lat: 4.5133, lng: -73.3497 },
+	nechi: { lat: 8.0943, lng: -74.7759 },
+	pasto: { lat: 1.2136, lng: -77.2811 },
+	guainia: { lat: 2.5854, lng: -68.5247 },
+	barranquilla: { lat: 10.9685, lng: -74.7813 },
+	venecia: { lat: 5.9651, lng: -75.735 },
+	amazonas: { lat: -1.4429, lng: -71.5724 },
+	cartagena: { lat: 10.391, lng: -75.4794 },
+	arboletes: { lat: 8.8503, lng: -76.4266 },
+};

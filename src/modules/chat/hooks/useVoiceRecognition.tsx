@@ -6,25 +6,26 @@ interface UseVoiceRecognitionParams {
 	onSendMessage: (message: string) => void;
 }
 
-export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams) => {
+export const useVoiceRecognition = ({
+	onSendMessage,
+}: UseVoiceRecognitionParams) => {
 	const [listening, setListening] = useState<boolean>(false);
 	const [transcript, setTranscript] = useState<string>("");
 	const [partialTranscript, setPartialTranscript] = useState<string>("");
 	const [lastSpokeTime, setLastSpokeTime] = useState<number>(Date.now());
-    
-	// @ts-ignore 
+
+	// @ts-ignore
 	const recognitionRef = useRef<SpeechRecognition | null>(null);
 
 	const initializeSpeechRecognition = useCallback(() => {
 		if (typeof window === "undefined") return;
 
-		// @ts-ignore 
+		// @ts-ignore
 		const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 		if (SpeechRecognition) {
 			const recognition = new SpeechRecognition();
 			recognition.lang = "es-ES";
 			recognition.continuous = true;
-			// Permitir resultados interinos para tener retroalimentación en tiempo real
 			recognition.interimResults = true;
 
 			recognition.onstart = () => {
@@ -32,7 +33,7 @@ export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams
 				setLastSpokeTime(Date.now());
 			};
 
-            // @ts-ignore 
+			// @ts-ignore
 			recognition.onresult = (event: SpeechRecognitionEvent) => {
 				let finalChunk = "";
 				let interimChunk = "";
@@ -40,8 +41,6 @@ export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams
 				for (let i = event.resultIndex; i < event.results.length; i++) {
 					const result = event.results[i];
 					const text = result[0].transcript;
-					// Si el resultado es final, se agrega a la transcripción final.
-					// Si no es final, es interino.
 					if (result.isFinal) {
 						finalChunk += text;
 					} else {
@@ -49,13 +48,11 @@ export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams
 					}
 				}
 
-				// Actualizamos transcripciones
 				if (finalChunk) {
-					setTranscript(prev => prev + finalChunk);
+					setTranscript((prev) => prev + finalChunk);
 					setPartialTranscript("");
 					setLastSpokeTime(Date.now());
 				} else {
-					// Actualizamos la transcripción parcial en tiempo real
 					setPartialTranscript(interimChunk);
 				}
 			};
@@ -66,20 +63,21 @@ export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams
 
 			recognition.onend = () => {
 				setListening(false);
-				// Si hay un texto final pendiente, se envía
 				const finalText = (transcript + partialTranscript).trim();
 				if (finalText !== "") {
 					onSendMessage(finalText);
 					setTranscript("");
 					setPartialTranscript("");
 				}
-				// Si se quiere que el reconocimiento siga escuchando de forma continua, descomentar:
+				// Escucha continua:
 				// recognition.start();
 			};
 
 			recognitionRef.current = recognition;
 		} else {
-			console.error("El reconocimiento de voz no es compatible con este navegador.");
+			console.error(
+				"El reconocimiento de voz no es compatible con este navegador."
+			);
 		}
 	}, [onSendMessage, transcript, partialTranscript]);
 
@@ -89,7 +87,6 @@ export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams
 		}
 
 		if (listening) {
-			// Si ya se está escuchando, paramos
 			recognitionRef.current?.stop();
 			setListening(false);
 			const finalText = (transcript + partialTranscript).trim();
@@ -99,19 +96,17 @@ export const useVoiceRecognition = ({ onSendMessage }: UseVoiceRecognitionParams
 			setTranscript("");
 			setPartialTranscript("");
 		} else {
-			// Comenzamos a escuchar
 			setTranscript("");
 			setPartialTranscript("");
 			recognitionRef.current?.start();
 		}
 	};
 
-	// Monitorear inactividad
 	useEffect(() => {
 		const interval = setInterval(() => {
 			if (listening) {
 				const timeSinceLastSpeech = (Date.now() - lastSpokeTime) / 1000;
-				if (timeSinceLastSpeech > 2 && recognitionRef.current) {
+				if (timeSinceLastSpeech > 3 && recognitionRef.current) {
 					recognitionRef.current.stop();
 					setListening(false);
 					const finalText = (transcript + partialTranscript).trim();
